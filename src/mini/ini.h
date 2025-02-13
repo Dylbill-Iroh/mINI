@@ -23,7 +23,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  /mINI/ v0.9.17
+//  /mINI/ v0.9.14
 //  An INI file reader and writer for the modern age.
 //
 ///////////////////////////////////////////////////////////////////////////////
@@ -156,8 +156,16 @@ namespace mINI
 
 		INIMap() { }
 
-		INIMap(INIMap const& other) : dataIndexMap(other.dataIndexMap), data(other.data)
+		INIMap(INIMap const& other)
 		{
+			std::size_t data_size = other.data.size();
+			for (std::size_t i = 0; i < data_size; ++i)
+			{
+				auto const& key = other.data[i].first;
+				auto const& obj = other.data[i].second;
+				data.emplace_back(key, obj);
+			}
+			dataIndexMap = T_DataIndexMap(other.dataIndexMap);
 		}
 
 		T& operator[](std::string key)
@@ -776,6 +784,71 @@ namespace mINI
 			return writer << data;
 		}
 	};
+
+	//Added by Dylbill
+	bool IniHasSectionKey(INIStructure& ini, std::string section, std::string key) {
+		if (ini.has(section)) {
+			auto& collection = ini[section];
+			if (collection.has(key)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	INIStructure GetIniFile(std::string fileName) {
+		INIFile file(fileName);
+		INIStructure ini;
+		file.read(ini);
+		return ini;
+	}
+
+	std::string GetIniString(INIStructure& ini, std::string section, std::string key, std::string sDefault = "") {
+		std::string sReturn = sDefault;
+		if (ini.has(section)) {
+			// we have section, we can access it safely without creating a new one
+			auto& collection = ini[section];
+			if (collection.has(key)) {
+				// we have key, we can access it safely without creating a new one
+				sReturn = collection[key];
+			}
+		}
+		return sReturn;
+	}
+
+	bool GetIniBool(INIStructure& ini, std::string section, std::string key, bool bDefault = false) {
+		std::string s = GetIniString(ini, section, key);
+		transform(s.begin(), s.end(), s.begin(), ::tolower);
+		if (s == "true" || s == "1") {
+			return true;
+		}
+		else if (s == "false" || s == "0") {
+			return false;
+		}
+		else {
+			return bDefault;
+		}
+	}
+
+	int GetIniInt(INIStructure& ini, std::string section, std::string key, int iDefault = -1) {
+		std::string s = GetIniString(ini, section, key);
+		if (s != "") {
+			return std::stoi(s);
+		}
+		else {
+			return iDefault;
+		}
+	}
+
+	float GetIniFloat(INIStructure& ini, std::string section, std::string key, float fDefault = -1.0) {
+		std::string s = GetIniString(ini, section, key);
+		if (s != "") {
+			return std::stof(s);
+		}
+		else {
+			return fDefault;
+		}
+	}
 }
 
 #endif // MINI_INI_H_
