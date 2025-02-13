@@ -1,7 +1,34 @@
 # mINI <img align="left" src="icon.png?raw=true" height="96">
 
-v0.9.17
+fork of v0.9.17
 
+## Additions
+Added convenience functions for getting ini values as bool, int, float or string. 
+Only gets the value if the ini file, section and key exists, otherwise returns a default parameter.
+Example: 
+```
+void MiniExample() {
+    //get ini file data
+    auto ini = mINI::GetIniFile("Data/MyIniFile.ini");
+
+    std::string sStringKey = mINI::GetIniString(ini, "Main", "sStringKey");
+    if (sStringKey != "") {
+        //sStringKey found
+    }
+
+    int iInt = mINI::GetIniInt(ini, "Main", "iInt");
+    if (iInt != -1) {
+        //iInt found
+    } 
+
+    float fFloat = mINI::GetIniFloat(ini, "Main", "fFloat");
+    if (iInt != -1.0) {
+        //fFloat found
+    }
+
+    bool bKey = mINI::GetIniBool(ini, "Main", "bKey");
+} 
+```
 ## Info
 
 This is a tiny, header only C++ library for manipulating INI files.
